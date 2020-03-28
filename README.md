@@ -1,5 +1,5 @@
 # fixpoint_test
-プログラミング試験（フィックスポイント）
+プログラミング試験（フィックスポイント）\
 $ python3 fix.py -hs -t
 または
 $ fix.py -hs -t
