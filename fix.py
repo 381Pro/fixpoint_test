@@ -4,6 +4,7 @@ import re
 import datetime
 import calendar
 import pytz
+import sys
 
 # day/month/year:hour:minute:secondをタイムゾーンを反映したタイムスタンプに変換
 def time_to_timestamp(time, zone = '+0900'):
@@ -19,18 +20,21 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-hs", "--host", action="store_true", help="リモートホスト別のアクセス件数を表示")
     parser.add_argument("-t", "--timeframe", action="store_true", help="各時間帯毎のアクセス件数を表示")
-    parser.add_argument("-l", "--log_file", help="解析したいログファイル（デフォルトは/var/log/httpd/access_log)", default='/var/log/httpd/access_log', nargs='*')
+    parser.add_argument("-sp", "--split_time", type=int, help="時間帯を何時間区切りに設定するか設定（デフォルトは1）", default=1)
+    parser.add_argument("-l", "--log_file", help="解析したいログファイル　複数の場合は空白区切りで指定する（デフォルトは/var/log/httpd/access_log)", default='/var/log/httpd/access_log', nargs='*')
     parser.add_argument("-fs", "--first", help="期間を指定する場合、始まりの時間（day/month/year:hour:minute:secondの書式）", default='01/Jan/0001:00:00:00')
     parser.add_argument("-ls", "--last", help="期間を指定する場合、終わりの時間（day/month/year:hour:minute:secondの書式）", default='31/Dec/9999:23:59:59')
     parser.add_argument("-z", "--zone", help="期間を指定する場合のタイムゾーンを指定する（デフォルトは+0900)", default='+0900')
-
     args = parser.parse_args()
 
     HOST = {}
     TIME = {}
-
-    first_timestamp = time_to_timestamp(args.first, args.zone) # 期間を指定する場合、始まりの時間のタイムスタンプ
-    last_timestamp = time_to_timestamp(args.last, args.zone) # 期間を指定する場合、終わりの時間のタイムスタンプ
+    try:
+        first_timestamp = time_to_timestamp(args.first, args.zone) # 期間を指定する場合、始まりの時間のタイムスタンプ
+        last_timestamp = time_to_timestamp(args.last, args.zone) # 期間を指定する場合、終わりの時間のタイムスタンプ
+    except ValueError:
+        print("期間指定のフォーマットが正しくありません。正しいフォーマットはday/month/year:hour:minute:second")
+        sys.exit(1)
 
     for log_file in args.log_file:
         with open(log_file, "r", encoding="utf8")as fr:
@@ -72,6 +76,15 @@ if __name__ == "__main__":
     HOST = sorted(HOST.items(), key=lambda x:x[1], reverse=True) # アクセスの多いリモートホストの順にソート
 
     if(args.host):
-        print(HOST)
+        for host, access in HOST:
+            print('Host名:', host, ',　アクセス数:', access)
+
     if(args.timeframe):
-        print(TIME)
+        split_time_list = [i for i in range(24)][0::args.split_time] # 時間帯を区切るためのリスト
+        split_time_list.append(24) # 24がsplit_timeで割り切れない場合に対応
+        for i, j in zip(split_time_list[0:], split_time_list[1:]): # 時間帯ごとのアクセス数の和を求める
+            access = 0
+            for time1, time2 in TIME.items():
+                if(i <= int(time1) and int(time1) <= j-1):
+                    access += int(time2)
+            print('時間帯: ', str(i).zfill(2) + ':00 ~ ' + str(j-1).zfill(2) + ':59 ,　アクセス数:', access)
