@@ -69,7 +69,8 @@ if __name__ == "__main__":
 
                 line = fr.readline()
 
-    TIME = sorted(TIME.items(), key=lambda x:x[1]) # アクセスの多いリモートホストの順にソート
+    HOST = sorted(HOST.items(), key=lambda x:x[1], reverse=True) # アクセスの多いリモートホストの順にソート
+
     if(args.host):
         print(HOST)
     if(args.timeframe):
