@@ -71,18 +71,18 @@ if __name__ == "__main__":
                     except KeyError:
                         TIME[log_dict["time"][12:14]] = 1
 
-                line = fr.readline()
+                line = fr.readline() # 次の行を読み込み
 
-    HOST = sorted(HOST.items(), key=lambda x:x[1], reverse=True) # アクセスの多いリモートホストの順にソート
 
     if(args.host):
+        HOST = sorted(HOST.items(), key=lambda x:x[1], reverse=True) # アクセスの多いリモートホストの順にソート
         for host, access in HOST:
             print('Host名:', host, ',　アクセス数:', access)
 
     if(args.timeframe):
         split_time_list = [i for i in range(24)][0::args.split_time] # 時間帯を区切るためのリスト
         split_time_list.append(24) # 24がsplit_timeで割り切れない場合に対応
-        for i, j in zip(split_time_list[0:], split_time_list[1:]): # 時間帯ごとのアクセス数の和を求める
+        for i, j in zip(split_time_list[0:], split_time_list[1:]): # 時間帯ごとのアクセス数の和を求め、表示
             access = 0
             for time1, time2 in TIME.items():
                 if(i <= int(time1) and int(time1) <= j-1):
