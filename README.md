@@ -1,4 +1,3 @@
-# プログラミング試験（フィックスポイント）
 `$ python3 fix.py --host --time   `  
 または   
 `$ fix.py --host --time   `  
